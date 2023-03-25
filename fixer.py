@@ -40,6 +40,28 @@ class  PointFixer(object):
 
                 points += row['Points']
 
+    def clean_data(self,df):
+        #remove first columng: empty inded
+        #df = df.iloc[: , 1:]
+        df.astype({'Month': 'string'}).dtypes
+        #remove comma from data so it can be a tring 
+        df['Day'] = df['Day'].apply(lambda x: x.split(',')[0])
+        #turn day and year, EOF Score  into floats 
+        df['Day'] = df['Day'].astype(float)
+        df['year'] = df['year'].astype(float)
+        df['Op EOG Score'] = df['Op EOG Score'].astype(float)
+
+        #replace words with 0
+        df['Minutes Played'] = df['Minutes Played'].apply(lambda a: str(0) if a == 'Did Not Play' else a)
+        df['Minutes Played'] = df['Minutes Played'].apply(lambda a: str(0) if a == 'Did Not Dress' else a)
+        df['Minutes Played'] = df['Minutes Played'].apply(lambda a: str(0) if a == 'Not With Team' else a)
+
+
+        df['Minutes Played'] = df['Minutes Played'].apply(lambda a: float(str(a).split(':')[0]))
+        
+        output = self.output
+        df.to_csv(output, index = False)
+
     def point_column_creation(self,df):
         point_list = []
 
@@ -61,10 +83,10 @@ class  PointFixer(object):
             'Steals', 'Blocks', 'Turnovers', 'Personal Fouls', 'Points', 'Month',
             'Day', 'Opposing Team', 'Team EOG Score', 'Op EOG Score', 'Away',
             'year'],)
-        df.to_csv(self.output)
-
+        return df
 
     def correct_data(self):
         loaded_data = self.data_load()
         self.point_collection(loaded_data)
-        self.point_column_creation(loaded_data)
+        point_fixed = self.point_column_creation(loaded_data)
+        self.clean_data(point_fixed)
